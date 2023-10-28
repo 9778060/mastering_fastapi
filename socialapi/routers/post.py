@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from ..models import UserPost, UserPostIn
+from .. import UserPost, UserPostIn
 
 posts_table = {}
 
