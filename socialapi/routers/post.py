@@ -41,7 +41,12 @@ async def get_comments(post_id: int):
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
-    return [comment for comment in comments_table.values() if comment["post_id"] == post_id]
+    found_comments = [comment for comment in comments_table.values() if comment["post_id"] == post_id]
+
+    if not found_comments:
+        raise HTTPException(status_code=404, detail="Comments not found")
+    
+    return found_comments
 
 @router.get("/{post_id}", response_model=UserPostWithComments)
 async def get_post_with_comments(post_id: int):
