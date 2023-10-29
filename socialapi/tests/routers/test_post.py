@@ -1,6 +1,5 @@
 import pytest
 from httpx import AsyncClient
-from ..conftest import posts_table, comments_table, async_client, client, anyio_backend
 
 async def create_post(body: str, async_client: AsyncClient) -> dict:
     response = await async_client.post("/posts/create_post", json={"body": body})
