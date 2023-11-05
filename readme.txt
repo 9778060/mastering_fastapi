@@ -11,9 +11,7 @@ CREATE - virtualenv -p python3 venv
 ACTIVATE - source venv/bin/activate
 
 PACKAGES:
-pip install openai
-pip install streamlit-authenticator
+pip install -r requirements.txt
 
-STREAMLIT:
-streamlit run streamlit_test.py
-
+UVICORN:
+uvicorn socialapi:main.app --reload
