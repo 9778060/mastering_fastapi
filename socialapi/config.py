@@ -1,5 +1,6 @@
 from functools import lru_cache
 from typing import Optional
+import os
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -42,7 +43,6 @@ def get_config(env_state: str):
         "prod": ProdConfig
     }
     return configs.get(env_state, DevConfig)()
-
 
 env_state = BaseConfig().ENV_STATE
 config = get_config(env_state)

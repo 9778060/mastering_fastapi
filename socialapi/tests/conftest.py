@@ -1,10 +1,11 @@
+import os
 from typing import AsyncGenerator, Generator
 import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
+from ..database import database
 from ..main import app
-from ..routers.post import comments_table, posts_table
 
 @pytest.fixture
 def number_of_posts_to_test():
@@ -24,9 +25,15 @@ def client() -> Generator:
 
 @pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
-    posts_table.clear()
-    comments_table.clear()
+    await database.connect()
+    query = """ALTER SEQUENCE posts_id_seq RESTART WITH 1"""
+    await database.execute(query=query)
+    query = """ALTER SEQUENCE comments_id_seq RESTART WITH 1"""
+    await database.execute(query=query)
+
     yield
+
+    await database.disconnect()
 
 @pytest.fixture
 async def async_client(client) -> AsyncGenerator:
