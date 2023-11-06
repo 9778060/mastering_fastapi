@@ -1,6 +1,8 @@
 import databases
 import sqlalchemy
-from config import config
+from .config import config
+
+connection_string = f"postgresql://{config.USER}:{config.PASSWORD}@{config.ADDRESS}:{config.PORT}/{config.DATABASE}"
 
 metadata = sqlalchemy.MetaData()
 
@@ -21,12 +23,11 @@ comments_table = sqlalchemy.Table(
 
 
 engine = sqlalchemy.create_engine(
-    url=config.DATABASE_URL
+    url=connection_string
 )
 
 metadata.create_all(engine)
 database = databases.Database(
-    url=config.DATABASE_URL,
+    url=connection_string,
     force_rollback=config.DB_FORCE_ROLL_BACK
-
 )

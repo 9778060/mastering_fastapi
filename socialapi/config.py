@@ -13,7 +13,11 @@ class BaseConfig(BaseSettings):
 
 
 class GlobalConfig(BaseConfig):
-    DATABASE_URL: Optional[str] = None
+    USER: Optional[str] = None
+    PASSWORD: Optional[str] = None
+    ADDRESS: Optional[str] = None
+    PORT: Optional[str] = None
+    DATABASE: Optional[str] = None
     DB_FORCE_ROLL_BACK: bool = False
 
 
