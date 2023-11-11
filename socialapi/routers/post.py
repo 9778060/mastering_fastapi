@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 async def find_post(post_id: int):
-    logger.info(f"Finding post with id {post_id}")
+    logger.info("Finding post with id %s", post_id)
 
     query = post_table.select().where(post_table.c.id == post_id)
 
@@ -48,7 +48,7 @@ async def add_comment(comment: CommentIn):
 
     post = await find_post(comment.post_id)
     if not post:
-        logger.error(f"Post with id {comment.post_id} not found")
+        logger.error("Post with id %s not found", comment.post_id)
         raise HTTPException(status_code=404, detail="Post not found")
 
     data = comment.model_dump()
@@ -62,11 +62,11 @@ async def add_comment(comment: CommentIn):
 
 @router.get("/{post_id}/comments", response_model=list[Comment])
 async def get_comments(post_id: int, error_if_no_comments=True):
-    logger.info(f"Getting comments for a post with id {post_id}")
+    logger.info("Getting comments for a post with id %s", post_id)
 
     post = await find_post(post_id)
     if not post:
-        logger.error(f"Post with id {post_id} not found")
+        logger.error("Post with id %s not found", post_id)
         raise HTTPException(status_code=404, detail="Post not found")
     
     query = comments_table.select().where(comments_table.c.post_id == post_id)
@@ -76,18 +76,18 @@ async def get_comments(post_id: int, error_if_no_comments=True):
     found_comments = await database.fetch_all(query)
 
     if error_if_no_comments and not found_comments:
-        logger.error(f"No comments found for post with id {post_id}")
+        logger.error("No comments found for post with id %s", post_id)
         raise HTTPException(status_code=404, detail="Comments not found")
     
     return found_comments
 
 @router.get("/{post_id}", response_model=UserPostWithComments)
 async def get_post_with_comments(post_id: int):
-    logger.info(f"Getting post with comments; post id {post_id}")
+    logger.info("Getting post with comments; post id %s", post_id)
 
     post = await find_post(post_id)
     if not post:
-        logger.error(f"Post with id {post_id} not found")
+        logger.error("Post with id %s not found", post_id)
         raise HTTPException(status_code=404, detail="Post not found")
     
     return {
