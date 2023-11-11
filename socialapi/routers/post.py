@@ -37,7 +37,8 @@ async def get_posts():
     
     query = post_table.select()
 
-    logger.debug("Message", extra={"email": "name@domain.com"})
+    logger.debug(query)
+    logger.debug("Masked email to display", extra={"email": "name@domain.com"})
 
     return await database.fetch_all(query)
 
