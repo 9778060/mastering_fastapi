@@ -2,9 +2,12 @@ from fastapi import FastAPI
 from . import post_router
 from contextlib import asynccontextmanager
 from .database import database
+from .logging_conf import configure_logging
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    configure_logging()
     await database.connect()
     yield
     await database.disconnect()
