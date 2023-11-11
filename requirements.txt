@@ -9,3 +9,4 @@ pytest-env
 rich
 asgi-correlation-id
 python-json-logger
+httpx
