@@ -70,7 +70,7 @@ def configure_logging() -> None:
                     "level": "DEBUG",
                     "formatter": "file",
                     "filename": "socialapi.log",
-                    "maxBytes": 1024 * 1024,  # 1 MB
+                    "maxBytes": 1024,  # 1 KB
                     "backupCount": 2,
                     "encoding": "utf8",
                     "filters": ["correlation_id", "email_obfuscation"]
