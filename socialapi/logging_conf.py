@@ -1,6 +1,8 @@
 from logging.config import dictConfig
 from .config import config, DevConfig
 
+handlers = ["default", "rotating_file"]
+
 def configure_logging() -> None:
     dictConfig(
         {
@@ -29,15 +31,15 @@ def configure_logging() -> None:
                     "level": "DEBUG",
                     "formatter": "file",
                     "filename": "socialapi.log",
-                    "maxBytes": 1024 * 1024,  # 1 MB
+                    "maxBytes": 1024,  # 1 KB
                     "backupCount": 2,
                     "encoding": "utf8"
                 }
             },
             "loggers": {
-                "uvicorn": {"handlers": ["default", "rotating_file"], "level": "INFO"},
+                "uvicorn": {"handlers": handlers, "level": "INFO"},
                 "socialapi": {
-                    "handlers": ["default"],
+                    "handlers": handlers,
                     "level": "DEBUG" if isinstance(config, DevConfig) else "INFO",
                     "propagate": False
                 },
