@@ -1,17 +1,20 @@
 INITIAL:
-sudo apt-get update
-sudo apt-get install libpython3-dev
-sudo apt-get install python-pip
-sudo apt install python3-pip
-sudo pip install virtualenv
-sudo apt-get install python3-venv
+sudo apt update && sudo apt upgrade -y
+sudo apt install software-properties-common -y
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.12
+python3.12 --version
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
+pip3.12 -V
+pip3.12 install virtualenv
 
 VENV:
-CREATE - virtualenv -p python3 venv
+CREATE - virtualenv -p python3.12 venv
 ACTIVATE - source venv/bin/activate
 
 PACKAGES:
-pip install -r requirements.txt
+pip3.12 install -r requirements.txt
 
 UVICORN:
 uvicorn socialapi:main.app --reload

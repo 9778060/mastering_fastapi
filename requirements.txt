@@ -7,3 +7,5 @@ pydantic-settings
 psycopg2-binary
 pytest-env
 rich
+asgi-correlation-id
+python-json-logger

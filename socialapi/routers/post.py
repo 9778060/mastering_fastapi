@@ -37,7 +37,7 @@ async def get_posts():
     
     query = post_table.select()
 
-    logger.debug(query)
+    logger.debug("Message", extra={"email": "name@domain.com"})
 
     return await database.fetch_all(query)
 
@@ -48,7 +48,6 @@ async def add_comment(comment: CommentIn):
 
     post = await find_post(comment.post_id)
     if not post:
-        logger.error("Post with id %s not found", comment.post_id)
         raise HTTPException(status_code=404, detail="Post not found")
 
     data = comment.model_dump()
@@ -66,7 +65,6 @@ async def get_comments(post_id: int, error_if_no_comments=True):
 
     post = await find_post(post_id)
     if not post:
-        logger.error("Post with id %s not found", post_id)
         raise HTTPException(status_code=404, detail="Post not found")
     
     query = comments_table.select().where(comments_table.c.post_id == post_id)
@@ -76,7 +74,6 @@ async def get_comments(post_id: int, error_if_no_comments=True):
     found_comments = await database.fetch_all(query)
 
     if error_if_no_comments and not found_comments:
-        logger.error("No comments found for post with id %s", post_id)
         raise HTTPException(status_code=404, detail="Comments not found")
     
     return found_comments
@@ -87,7 +84,6 @@ async def get_post_with_comments(post_id: int):
 
     post = await find_post(post_id)
     if not post:
-        logger.error("Post with id %s not found", post_id)
         raise HTTPException(status_code=404, detail="Post not found")
     
     return {
