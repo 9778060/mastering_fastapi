@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from . import post_router
+from . import user_router
 from contextlib import asynccontextmanager
 from .database import database
 from .logging_conf import configure_logging
@@ -22,6 +23,9 @@ app.add_middleware(CorrelationIdMiddleware)
 
 prefix_posts = "/posts"
 app.include_router(post_router, prefix=prefix_posts)
+
+prefix_users = "/users"
+app.include_router(user_router, prefix=prefix_users)
 
 @app.get("/")
 async def root():

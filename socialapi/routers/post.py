@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from .. import UserPost, UserPostIn, CommentIn, Comment, UserPostWithComments
 from ..database import post_table, comments_table, database
 import sys
@@ -38,7 +38,6 @@ async def get_posts():
     query = post_table.select()
 
     logger.debug(query)
-    logger.debug("Masked email to display", extra={"email": "name@domain.com"})
 
     return await database.fetch_all(query)
 
@@ -49,7 +48,7 @@ async def add_comment(comment: CommentIn):
 
     post = await find_post(comment.post_id)
     if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
     data = comment.model_dump()
     query = comments_table.insert().values(data)
@@ -66,7 +65,7 @@ async def get_comments(post_id: int, error_if_no_comments=True):
 
     post = await find_post(post_id)
     if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
     
     query = comments_table.select().where(comments_table.c.post_id == post_id)
 
@@ -75,7 +74,7 @@ async def get_comments(post_id: int, error_if_no_comments=True):
     found_comments = await database.fetch_all(query)
 
     if error_if_no_comments and not found_comments:
-        raise HTTPException(status_code=404, detail="Comments not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comments not found")
     
     return found_comments
 
@@ -85,7 +84,7 @@ async def get_post_with_comments(post_id: int):
 
     post = await find_post(post_id)
     if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
     
     return {
         "post": post,

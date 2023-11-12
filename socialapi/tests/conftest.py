@@ -4,8 +4,8 @@ import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
-from ..database import database
-from ..main import app
+from ..database import database, users_table
+from ..main import app, prefix_users
 
 @pytest.fixture
 def number_of_posts_to_test():
@@ -39,3 +39,19 @@ async def db() -> AsyncGenerator:
 async def async_client(client) -> AsyncGenerator:
     async with AsyncClient(app=app, base_url=client.base_url) as ac:
         yield ac
+
+
+@pytest.fixture
+async def registered_user(async_client: AsyncClient) -> dict:
+    user_details = {"email": "test@test.com", "password": "1234"}
+    await async_client.post(prefix_users + "/register", json=user_details)
+
+    print()
+    print(user_details)
+
+    query = users_table.select().where(users_table.c.email == user_details["email"])
+    user = await database.fetch_one(query)
+
+    user_details["id"] = user.id
+
+    return user_details

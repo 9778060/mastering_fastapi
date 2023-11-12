@@ -10,3 +10,6 @@ rich
 asgi-correlation-id
 python-json-logger
 httpx
+python-jose
+python-multipart
+bcrypt

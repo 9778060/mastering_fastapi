@@ -21,6 +21,13 @@ comments_table = sqlalchemy.Table(
     sqlalchemy.Column("post_id", sqlalchemy.ForeignKey("posts.id"), nullable=False)
 )
 
+users_table = sqlalchemy.Table(
+    "users",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("email", sqlalchemy.String, unique=True, nullable=False),
+    sqlalchemy.Column("password", sqlalchemy.String, nullable=False),
+)
 
 engine = sqlalchemy.create_engine(
     url=connection_string
