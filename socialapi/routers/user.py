@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException, status
 import logging
 from .. import User, UserIn
-from ..security import get_user, get_password_hash
+from ..security import get_user, get_password_hash, authenticate_user, create_access_token, credentials_exception
 from ..database import users_table, database
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
 
 @router.post("/register", status_code=201)
 async def register(user: UserIn):
@@ -27,3 +28,15 @@ async def register(user: UserIn):
     last_record_id = await database.execute(query)
 
     return {"detail": "User is created", "id": last_record_id}
+
+
+@router.post("/login")
+async def login(user: UserIn):
+    user = await authenticate_user(user.email, user.password)
+
+    if not user:
+        raise credentials_exception
+    
+    access_token = create_access_token(user.email)
+
+    return {"access_token": access_token, "token_type": "bearer"}

@@ -20,6 +20,8 @@ class GlobalConfig(BaseConfig):
     PORT: Optional[str] = None
     DATABASE: Optional[str] = None
     DB_FORCE_ROLL_BACK: bool = False
+    JWT_SECRET_KEY: Optional[str] = None
+    JWT_ALGORITHM: Optional[str] = None
 
 
 class DevConfig(GlobalConfig):
