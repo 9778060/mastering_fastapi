@@ -2,40 +2,42 @@ import pytest
 from httpx import AsyncClient
 import sys
 from fastapi import status
+from ... import security
 
 from ...main import prefix_posts
 
-async def create_post(body: str, async_client: AsyncClient) -> dict:
-    response = await async_client.post(prefix_posts + "/create_post", json={"body": body})
+async def create_post(body: str, async_client: AsyncClient, logged_in_token: str) -> dict:
+    response = await async_client.post(prefix_posts + "/create_post", json={"body": body}, headers={"Authorization": f"Bearer {logged_in_token}"})
     return response.json()
 
-async def create_comment(body: str, post_id: int, async_client: AsyncClient) -> dict:
-    response = await async_client.post(prefix_posts + "/create_comment", json={"body": body, "post_id": post_id})
+async def create_comment(body: str, post_id: int, async_client: AsyncClient, logged_in_token: str) -> dict:
+    response = await async_client.post(prefix_posts + "/create_comment", json={"body": body, "post_id": post_id}, headers={"Authorization": f"Bearer {logged_in_token}"})
     return response.json()
 
 @pytest.fixture
-async def created_post(async_client: AsyncClient):
-    return [await create_post("Auto created post from pytest", async_client)]
+async def created_post(async_client: AsyncClient, logged_in_token: str):
+    return [await create_post("Auto created post from pytest", async_client, logged_in_token)]
 
 @pytest.fixture
-async def created_comment(async_client: AsyncClient, created_post: list[dict]):
-    return [await create_comment("Auto created comment from pytest", created_post[0]["id"], async_client)]
+async def created_comment(async_client: AsyncClient, created_post: list[dict], logged_in_token: str):
+    return [await create_comment("Auto created comment from pytest", created_post[0]["id"], async_client, logged_in_token)]
 
 @pytest.fixture
-async def created_posts(async_client: AsyncClient, number_of_posts_to_test: int):
-    return [await create_post("Auto created post from pytest", async_client) for i in range(number_of_posts_to_test)]
+async def created_posts(async_client: AsyncClient, number_of_posts_to_test: int, logged_in_token: str):
+    return [await create_post("Auto created post from pytest", async_client, logged_in_token) for i in range(number_of_posts_to_test)]
 
 @pytest.fixture
-async def created_comments(async_client: AsyncClient, created_post: list[dict], number_of_comments_to_test: int):
-    return [await create_comment("Auto created comment from pytest", created_post[0]["id"], async_client) for i in range(number_of_comments_to_test)]
+async def created_comments(async_client: AsyncClient, created_post: list[dict], number_of_comments_to_test: int, logged_in_token: str):
+    return [await create_comment("Auto created comment from pytest", created_post[0]["id"], async_client, logged_in_token) for i in range(number_of_comments_to_test)]
 
 @pytest.mark.anyio
-async def test_create_posts(async_client: AsyncClient):
+async def test_create_posts(async_client: AsyncClient, logged_in_token: str):
     body = "Test Post"
 
     response = await async_client.post(
         prefix_posts + "/create_post", 
-        json={"body": body}
+        json={"body": body},
+        headers={"Authorization": f"Bearer {logged_in_token}"}
     )
 
     print()
@@ -47,7 +49,8 @@ async def test_create_posts(async_client: AsyncClient):
 
     response = await async_client.post(
         prefix_posts + "/create_post", 
-        json={"body": body}
+        json={"body": body},
+        headers={"Authorization": f"Bearer {logged_in_token}"}
     )
 
     print()
@@ -59,7 +62,8 @@ async def test_create_posts(async_client: AsyncClient):
 
     response = await async_client.post(
         prefix_posts + "/create_post", 
-        json={"body": body}
+        json={"body": body},
+        headers={"Authorization": f"Bearer {logged_in_token}"}
     )
 
     print()
@@ -70,16 +74,32 @@ async def test_create_posts(async_client: AsyncClient):
 
 
 @pytest.mark.anyio
-async def test_create_post_without_body(async_client: AsyncClient):
+async def test_create_post_without_body(async_client: AsyncClient, logged_in_token: str):
     response = await async_client.post(
         prefix_posts + "/create_post",
-        json={}
+        json={},
+        headers={"Authorization": f"Bearer {logged_in_token}"}
     )
 
     print()
     print(response)
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.anyio
+async def test_create_post_expired_token(async_client: AsyncClient, registered_user: dict, mocker):
+    mocker.patch("socialapi.security.access_token_expire_minutes", return_value=-1)
+    token = security.create_access_token(registered_user["email"])
+    response = await async_client.post(
+        prefix_posts + "/create_post",
+        json={"body": "Test Post"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "Token has expired" in response.json()["detail"]
+
 
 @pytest.mark.anyio
 async def test_get_all_posts_1_post(async_client: AsyncClient, created_post: list[dict]):
@@ -109,12 +129,13 @@ async def test_get_all_posts_all_posts(async_client: AsyncClient, created_posts:
 
 
 @pytest.mark.anyio
-async def test_create_comment(async_client: AsyncClient, created_post: list[dict]):
+async def test_create_comment(async_client: AsyncClient, created_post: list[dict], logged_in_token: str):
     body = "Test Comment"
 
     response = await async_client.post(
         prefix_posts + "/create_comment", 
-        json={"body": body, "post_id": created_post[0]["id"]}
+        json={"body": body, "post_id": created_post[0]["id"]},
+        headers={"Authorization": f"Bearer {logged_in_token}"}
     )
 
     print()
@@ -125,7 +146,8 @@ async def test_create_comment(async_client: AsyncClient, created_post: list[dict
 
     response = await async_client.post(
         prefix_posts + "/create_comment", 
-        json={"body": body, "post_id": created_post[0]["id"]}
+        json={"body": body, "post_id": created_post[0]["id"]},
+        headers={"Authorization": f"Bearer {logged_in_token}"}
     )
 
     print()
@@ -136,7 +158,8 @@ async def test_create_comment(async_client: AsyncClient, created_post: list[dict
 
     response = await async_client.post(
         prefix_posts + "/create_comment", 
-        json={"body": body, "post_id": created_post[0]["id"]}
+        json={"body": body, "post_id": created_post[0]["id"]},
+        headers={"Authorization": f"Bearer {logged_in_token}"}
     )
 
     print()

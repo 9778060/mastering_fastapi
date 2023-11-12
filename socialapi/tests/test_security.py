@@ -56,3 +56,19 @@ async def test_authenticate_user_wrong_password(registered_user: dict):
     
     assert exc_info.value.status_code == security.status.HTTP_401_UNAUTHORIZED
     assert exc_info.value.detail == "Could not validate credentials"
+
+
+@pytest.mark.anyio
+async def test_get_current_user(registered_user: dict):
+    token = security.create_access_token(registered_user["email"])
+    user = await security.get_current_user(token)
+    assert user.email == registered_user["email"]
+
+
+@pytest.mark.anyio
+async def test_get_current_user_invalid_token():
+    with pytest.raises(security.HTTPException) as exc_info:
+        await security.get_current_user("random_string")
+
+    assert exc_info.value.status_code == security.status.HTTP_401_UNAUTHORIZED
+    assert exc_info.value.detail == "Could not validate credentials"

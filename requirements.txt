@@ -13,3 +13,4 @@ httpx
 python-jose
 python-multipart
 bcrypt
+pytest-mock

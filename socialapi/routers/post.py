@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException, status
-from .. import UserPost, UserPostIn, CommentIn, Comment, UserPostWithComments
+from fastapi import APIRouter, HTTPException, status, Depends
+from .. import UserPost, UserPostIn, CommentIn, Comment, UserPostWithComments, User
 from ..database import post_table, comments_table, database
+from ..security import get_current_user
+from typing import Annotated
 import sys
 import logging
 
@@ -19,7 +21,7 @@ async def find_post(post_id: int):
 
 
 @router.post("/create_post", response_model=UserPost, status_code=201)
-async def add_post(user_post: UserPostIn):
+async def add_post(user_post: UserPostIn, current_user: Annotated[User, Depends(get_current_user)]):
     logger.info("Creating a post")
 
     data = user_post.model_dump()
@@ -43,7 +45,7 @@ async def get_posts():
 
 
 @router.post("/create_comment", response_model=Comment, status_code=201)
-async def add_comment(comment: CommentIn):
+async def add_comment(comment: CommentIn, current_user: Annotated[User, Depends(get_current_user)]):
     logger.info("Creating a comment")
 
     post = await find_post(comment.post_id)

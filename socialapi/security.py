@@ -4,9 +4,13 @@ from jose import ExpiredSignatureError, JWTError, jwt
 import bcrypt
 import datetime
 from .config import config
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordBearer
+from typing import Annotated
 
 logger = logging.getLogger(__name__)
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -27,7 +31,7 @@ def create_access_token(email: str):
     )
     jwt_data = {"sub": email, "exp": expire}
     encoded_jwt = jwt.encode(jwt_data, key=config.JWT_SECRET_KEY, algorithm=config.JWT_ALGORITHM)
-    
+
     return encoded_jwt
 
 
@@ -64,4 +68,31 @@ async def authenticate_user(email: str, password: str):
     if not verify_password(password, user.password):
         raise credentials_exception
     
+    return user
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    try:
+        payload = jwt.decode(token, key=config.JWT_SECRET_KEY, algorithms=[config.JWT_ALGORITHM])
+        email = payload.get("sub")
+
+        print("TEST")
+        print(email)
+
+        if not email:
+            raise credentials_exception
+    except ExpiredSignatureError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from e
+    except JWTError as e:
+        raise credentials_exception from e
+    
+    user = await get_user(email)
+
+    if not user:
+        raise credentials_exception
+
     return user
