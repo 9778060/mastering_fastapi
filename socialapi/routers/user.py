@@ -8,7 +8,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.post("/register", status_code=201)
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(user: UserIn):
 
     if await get_user(user.email):

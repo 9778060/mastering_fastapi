@@ -20,11 +20,11 @@ async def find_post(post_id: int):
     return await database.fetch_one(query)
 
 
-@router.post("/create_post", response_model=UserPost, status_code=201)
+@router.post("/create_post", response_model=UserPost, status_code=status.HTTP_201_CREATED)
 async def add_post(user_post: UserPostIn, current_user: Annotated[User, Depends(get_current_user)]):
     logger.info("Creating a post")
 
-    data = user_post.model_dump()
+    data = {**user_post.model_dump(), "user_id": current_user.id}
     query = post_table.insert().values(data)
 
     logger.debug(query)
@@ -44,7 +44,7 @@ async def get_posts():
     return await database.fetch_all(query)
 
 
-@router.post("/create_comment", response_model=Comment, status_code=201)
+@router.post("/create_comment", response_model=Comment, status_code=status.HTTP_201_CREATED)
 async def add_comment(comment: CommentIn, current_user: Annotated[User, Depends(get_current_user)]):
     logger.info("Creating a comment")
 
@@ -52,7 +52,7 @@ async def add_comment(comment: CommentIn, current_user: Annotated[User, Depends(
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
-    data = comment.model_dump()
+    data = {**comment.model_dump(), "user_id": current_user.id}
     query = comments_table.insert().values(data)
 
     logger.debug(query)

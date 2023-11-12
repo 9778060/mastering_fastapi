@@ -31,7 +31,7 @@ async def created_comments(async_client: AsyncClient, created_post: list[dict], 
     return [await create_comment("Auto created comment from pytest", created_post[0]["id"], async_client, logged_in_token) for i in range(number_of_comments_to_test)]
 
 @pytest.mark.anyio
-async def test_create_posts(async_client: AsyncClient, logged_in_token: str):
+async def test_create_posts(async_client: AsyncClient, registered_user: dict, logged_in_token: str):
     body = "Test Post"
 
     response = await async_client.post(
@@ -44,7 +44,7 @@ async def test_create_posts(async_client: AsyncClient, logged_in_token: str):
     print(response.json())
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert {"id": 1, "body": body}.items() <= response.json().items()
+    assert {"id": 1, "body": body, "user_id": registered_user["id"]}.items() <= response.json().items()
 
 
     response = await async_client.post(
@@ -57,7 +57,7 @@ async def test_create_posts(async_client: AsyncClient, logged_in_token: str):
     print(response.json())
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert {"id": 2, "body": body}.items() <= response.json().items()
+    assert {"id": 2, "body": body, "user_id": registered_user["id"]}.items() <= response.json().items()
 
 
     response = await async_client.post(
@@ -70,7 +70,7 @@ async def test_create_posts(async_client: AsyncClient, logged_in_token: str):
     print(response.json())
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert {"id": 3, "body": body}.items() <= response.json().items()    
+    assert {"id": 3, "body": body, "user_id": registered_user["id"]}.items() <= response.json().items()
 
 
 @pytest.mark.anyio
@@ -129,7 +129,7 @@ async def test_get_all_posts_all_posts(async_client: AsyncClient, created_posts:
 
 
 @pytest.mark.anyio
-async def test_create_comment(async_client: AsyncClient, created_post: list[dict], logged_in_token: str):
+async def test_create_comment(async_client: AsyncClient, created_post: list[dict], registered_user: dict, logged_in_token: str):
     body = "Test Comment"
 
     response = await async_client.post(
@@ -142,7 +142,7 @@ async def test_create_comment(async_client: AsyncClient, created_post: list[dict
     print(response.json())
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert {"id": 1, "body": body, "post_id": created_post[0]["id"]}.items() <= response.json().items()
+    assert {"id": 1, "body": body, "post_id": created_post[0]["id"], "user_id": registered_user["id"]}.items() <= response.json().items()
 
     response = await async_client.post(
         prefix_posts + "/create_comment", 
@@ -154,7 +154,7 @@ async def test_create_comment(async_client: AsyncClient, created_post: list[dict
     print(response.json())
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert {"id": 2, "body": body, "post_id": created_post[0]["id"]}.items() <= response.json().items()
+    assert {"id": 2, "body": body, "post_id": created_post[0]["id"], "user_id": registered_user["id"]}.items() <= response.json().items()
 
     response = await async_client.post(
         prefix_posts + "/create_comment", 
@@ -166,7 +166,7 @@ async def test_create_comment(async_client: AsyncClient, created_post: list[dict
     print(response.json())
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert {"id": 3, "body": body, "post_id": created_post[0]["id"]}.items() <= response.json().items()
+    assert {"id": 3, "body": body, "post_id": created_post[0]["id"], "user_id": registered_user["id"]}.items() <= response.json().items()
 
 @pytest.mark.anyio
 async def test_get_1_comment_on_post(async_client: AsyncClient, created_post: list[dict], created_comment: list[dict]):
