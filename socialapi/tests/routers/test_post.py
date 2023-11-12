@@ -1,6 +1,7 @@
 import pytest
 from httpx import AsyncClient
 import sys
+from fastapi import status
 
 from ...main import prefix_posts
 
@@ -40,7 +41,7 @@ async def test_create_posts(async_client: AsyncClient):
     print()
     print(response.json())
 
-    assert response.status_code == 201
+    assert response.status_code == status.HTTP_201_CREATED
     assert {"id": 1, "body": body}.items() <= response.json().items()
 
 
@@ -52,7 +53,7 @@ async def test_create_posts(async_client: AsyncClient):
     print()
     print(response.json())
 
-    assert response.status_code == 201
+    assert response.status_code == status.HTTP_201_CREATED
     assert {"id": 2, "body": body}.items() <= response.json().items()
 
 
@@ -64,7 +65,7 @@ async def test_create_posts(async_client: AsyncClient):
     print()
     print(response.json())
 
-    assert response.status_code == 201
+    assert response.status_code == status.HTTP_201_CREATED
     assert {"id": 3, "body": body}.items() <= response.json().items()    
 
 
@@ -78,7 +79,7 @@ async def test_create_post_without_body(async_client: AsyncClient):
     print()
     print(response)
 
-    assert response.status_code == 422
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 @pytest.mark.anyio
 async def test_get_all_posts_1_post(async_client: AsyncClient, created_post: list[dict]):
@@ -90,7 +91,7 @@ async def test_get_all_posts_1_post(async_client: AsyncClient, created_post: lis
     print()
     print(response.json())
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == created_post
 
 @pytest.mark.anyio
@@ -103,7 +104,7 @@ async def test_get_all_posts_all_posts(async_client: AsyncClient, created_posts:
     print()
     print(response.json())
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == created_posts
 
 
@@ -119,7 +120,7 @@ async def test_create_comment(async_client: AsyncClient, created_post: list[dict
     print()
     print(response.json())
 
-    assert response.status_code == 201
+    assert response.status_code == status.HTTP_201_CREATED
     assert {"id": 1, "body": body, "post_id": created_post[0]["id"]}.items() <= response.json().items()
 
     response = await async_client.post(
@@ -130,7 +131,7 @@ async def test_create_comment(async_client: AsyncClient, created_post: list[dict
     print()
     print(response.json())
 
-    assert response.status_code == 201
+    assert response.status_code == status.HTTP_201_CREATED
     assert {"id": 2, "body": body, "post_id": created_post[0]["id"]}.items() <= response.json().items()
 
     response = await async_client.post(
@@ -141,7 +142,7 @@ async def test_create_comment(async_client: AsyncClient, created_post: list[dict
     print()
     print(response.json())
 
-    assert response.status_code == 201
+    assert response.status_code == status.HTTP_201_CREATED
     assert {"id": 3, "body": body, "post_id": created_post[0]["id"]}.items() <= response.json().items()
 
 @pytest.mark.anyio
@@ -153,7 +154,7 @@ async def test_get_1_comment_on_post(async_client: AsyncClient, created_post: li
     print()
     print(response.json())
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == created_comment
 
 @pytest.mark.anyio
@@ -165,7 +166,7 @@ async def test_get_1_comment_on_post_empty(async_client: AsyncClient, created_po
     print()
     print(response)
 
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
     
 
 @pytest.mark.anyio
@@ -177,7 +178,7 @@ async def test_get_all_comments_on_post(async_client: AsyncClient, created_post:
     print()
     print(response.json())
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == created_comments
 
 @pytest.mark.anyio
@@ -189,7 +190,7 @@ async def test_get_post_with_1_comment(async_client: AsyncClient, created_post: 
     print()
     print(response.json())
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {"post": created_post[0], "comments": created_comment}
 
 @pytest.mark.anyio
@@ -201,7 +202,7 @@ async def test_get_post_with_many_comments(async_client: AsyncClient, created_po
     print()
     print(response.json())
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == {"post": created_post[0], "comments": created_comments}
 
 @pytest.mark.anyio
@@ -213,4 +214,4 @@ async def test_get_missing_post_with_comment(async_client: AsyncClient, created_
     print()
     print(response.json())
 
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
