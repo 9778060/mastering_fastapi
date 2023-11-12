@@ -26,4 +26,4 @@ async def register(user: UserIn):
 
     last_record_id = await database.execute(query)
 
-    return {"message": "User is created", "id": last_record_id}
+    return {"detail": "User is created", "id": last_record_id}

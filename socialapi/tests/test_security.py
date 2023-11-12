@@ -10,3 +10,7 @@ async def test_get_user(registered_user: dict):
 async def test_get_user_not_found():
     user = await security.get_user("test@test.com")
     assert user is None
+
+def test_password_hashes():
+    password = "password"
+    assert security.verify_password(password, security.get_password_hash(password))
