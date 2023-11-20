@@ -37,14 +37,15 @@ users_table = sqlalchemy.Table(
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("email", sqlalchemy.String, unique=True, nullable=False),
     sqlalchemy.Column("password", sqlalchemy.String, nullable=False),
-    sqlalchemy.Column("confirmed", sqlalchemy.Boolean, nullable=False, server_default=sqlalchemy.sql.expression.false())
+    sqlalchemy.Column("confirmed", sqlalchemy.Boolean, nullable=False, server_default=sqlalchemy.sql.expression.false(), default=sqlalchemy.sql.expression.false())
 )
 
 engine = sqlalchemy.create_engine(
     url=connection_string
 )
 
-metadata.create_all(engine)
+# metadata.create_all(engine)
+
 database = databases.Database(
     url=connection_string,
     force_rollback=config.DB_FORCE_ROLL_BACK

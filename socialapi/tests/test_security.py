@@ -100,11 +100,11 @@ async def test_get_user_not_found():
 
 
 @pytest.mark.anyio
-async def test_authenticate_user(registered_user: dict):
+async def test_authenticate_user(confirmed_user: dict):
     user = await security.authenticate_user(
-        registered_user["email"], registered_user["password"]
+        confirmed_user["email"], confirmed_user["password"]
     )
-    assert user.email == registered_user["email"]
+    assert user.email == confirmed_user["email"]
 
 
 @pytest.mark.anyio
@@ -126,10 +126,10 @@ async def test_authenticate_user_wrong_password(registered_user: dict):
 
 
 @pytest.mark.anyio
-async def test_get_current_user(registered_user: dict):
-    token = security.create_access_token(registered_user["email"])
+async def test_get_current_user(confirmed_user: dict):
+    token = security.create_access_token(confirmed_user["email"])
     user = await security.get_current_user(token)
-    assert user.email == registered_user["email"]
+    assert user.email == confirmed_user["email"]
 
 
 @pytest.mark.anyio
