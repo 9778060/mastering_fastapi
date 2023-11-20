@@ -7,13 +7,20 @@ from jose import jwt
 def test_access_token_expire_minutes():
     assert security.access_token_expire_minutes() == 5
 
+def test_confirmation_token_expire_minutes():
+    assert security.confirm_token_expire_minutes() == 5
 
 def test_create_access_token():
     token = security.create_access_token("test@test.com")
-    assert {"sub": "test@test.com"}.items() <= jwt.decode(
+    assert {"sub": "test@test.com", "type": "access"}.items() <= jwt.decode(
         token, key=config.JWT_SECRET_KEY, algorithms=[config.JWT_ALGORITHM]
     ).items()
 
+def test_create_confirm_token():
+    token = security.create_confirmation_token("test@test.com")
+    assert {"sub": "test@test.com", "type": "confirmation"}.items() <= jwt.decode(
+        token, key=config.JWT_SECRET_KEY, algorithms=[config.JWT_ALGORITHM]
+    ).items()
 
 def test_password_hashes():
     password = "password"
@@ -69,6 +76,16 @@ async def test_get_current_user(registered_user: dict):
 async def test_get_current_user_invalid_token():
     with pytest.raises(security.HTTPException) as exc_info:
         await security.get_current_user("random_string")
+
+    assert exc_info.value.status_code == security.status.HTTP_401_UNAUTHORIZED
+    assert exc_info.value.detail == "Could not validate credentials"
+
+
+@pytest.mark.anyio
+async def test_get_current_user_wrong_token_type(registered_user: dict):
+    token = security.create_confirmation_token(registered_user["email"])
+    with pytest.raises(security.HTTPException) as exc_info:
+        await security.get_current_user(token)
 
     assert exc_info.value.status_code == security.status.HTTP_401_UNAUTHORIZED
     assert exc_info.value.detail == "Could not validate credentials"
