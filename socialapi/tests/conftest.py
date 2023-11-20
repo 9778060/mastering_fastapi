@@ -34,6 +34,7 @@ async def db() -> AsyncGenerator:
     await database.execute(query=query)
     query = """ALTER SEQUENCE likes_id_seq RESTART WITH 1"""
     await database.execute(query=query)
+    
     yield
 
     await database.disconnect()

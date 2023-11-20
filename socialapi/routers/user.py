@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 import logging
 from .. import User, UserIn
-from ..security import get_user, get_password_hash, authenticate_user, create_access_token, credentials_exception
+from ..security import get_user, get_password_hash, authenticate_user, create_access_token, create_credentials_exception
 from ..database import users_table, database
 
 router = APIRouter()
@@ -35,7 +35,7 @@ async def login(user: UserIn):
     user = await authenticate_user(user.email, user.password)
 
     if not user:
-        raise credentials_exception
+        raise create_credentials_exception("User with this token not found")
     
     access_token = create_access_token(user.email)
 
