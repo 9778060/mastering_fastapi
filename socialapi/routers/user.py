@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 import logging
 from .. import User, UserIn
-from ..security import get_user, get_password_hash, authenticate_user, create_access_token, create_credentials_exception
+from ..security import get_user, get_password_hash, authenticate_user, create_access_token, create_credentials_exception, get_subject_for_token_type
 from ..database import users_table, database
 
 router = APIRouter()
@@ -40,3 +40,14 @@ async def login(user: UserIn):
     access_token = create_access_token(user.email)
 
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get("/confirm/{token}")
+async def confirm_email(token: str):
+    email = get_subject_for_token_type(token, "confirmation")
+    query = users_table.update().where(users_table.c.email == email).values(confirmed=True)
+
+    logger.debug(query)
+
+    await database.execute(query)
+    return {"detail": "User confirmed"}

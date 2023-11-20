@@ -28,7 +28,7 @@ like_table = sqlalchemy.Table(
     metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("post_id", sqlalchemy.ForeignKey("posts.id"), nullable=False),
-    sqlalchemy.Column("user_id", sqlalchemy.ForeignKey("users.id"), nullable=False)
+    sqlalchemy.Column("user_id", sqlalchemy.ForeignKey("users.id"), nullable=False),
 )
 
 users_table = sqlalchemy.Table(
@@ -37,6 +37,7 @@ users_table = sqlalchemy.Table(
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("email", sqlalchemy.String, unique=True, nullable=False),
     sqlalchemy.Column("password", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("confirmed", sqlalchemy.Boolean, nullable=False, server_default=sqlalchemy.sql.expression.false())
 )
 
 engine = sqlalchemy.create_engine(
