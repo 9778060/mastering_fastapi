@@ -18,3 +18,11 @@ pip3.12 install -r requirements.txt
 
 UVICORN:
 uvicorn socialapi:main.app --reload
+
+ALEMBIC:
+init -> alembic init migrations
+current -> alembic current
+generate revision -> alembic revision --autogenerate
+upgrade -> alembic upgrade <revision | head>
+downgrade -> alembic downgrade <revision | base>
+history -> alembic history <--verbose>
