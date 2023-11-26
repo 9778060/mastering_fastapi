@@ -15,3 +15,6 @@ python-multipart
 bcrypt
 pytest-mock
 alembic
+aiofiles
+b2sdk
+pyfakefs
