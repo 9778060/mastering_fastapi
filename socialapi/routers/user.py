@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Request
+from fastapi import APIRouter, HTTPException, status, Request, BackgroundTasks
 import logging
 from .. import User, UserIn
 from ..security import (
@@ -10,6 +10,7 @@ from ..security import (
     get_subject_for_token_type,
     create_confirmation_token
 )
+from .. import tasks
 
 from ..database import users_table, database
 
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register(user: UserIn, request: Request):
+async def register(user: UserIn, background_tasks: BackgroundTasks, request: Request):
 
     if await get_user(user.email):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists")
@@ -36,7 +37,15 @@ async def register(user: UserIn, request: Request):
 
     last_record_id = await database.execute(query)
 
-    return {"detail": "User is created", "id": last_record_id, "confirmation_url": request.url_for("confirm_email", token=create_confirmation_token(user.email))}
+    logger.debug("Submitting background task to send email")
+
+    background_tasks.add_task(
+        tasks.send_user_registration_email,
+        user.email,
+        confirmation_url=request.url_for("confirm_email", token=create_confirmation_token(user.email)),
+    )
+
+    return {"detail": "User is created. Please confirm your email", "id": last_record_id}
 
 
 @router.post("/login")

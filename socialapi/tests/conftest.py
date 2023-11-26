@@ -2,7 +2,8 @@ import os
 from typing import AsyncGenerator, Generator
 import pytest
 from fastapi.testclient import TestClient
-from httpx import AsyncClient
+from httpx import AsyncClient, Request, Response
+from unittest.mock import AsyncMock, Mock
 
 from ..database import database, users_table
 from ..main import app, prefix_users
@@ -76,3 +77,19 @@ async def confirmed_user(registered_user: dict) -> dict:
 async def logged_in_token(async_client: AsyncClient, confirmed_user: dict) -> str:
     response = await async_client.post(prefix_users + "/login", json=confirmed_user)
     return response.json()["access_token"]
+
+
+@pytest.fixture(autouse=True)
+def mock_httpx_client(mocker):
+    """
+    Fixture to mock the HTTPX client so that we never make any
+    real HTTP requests (especially important when registering users).
+    """
+    mocked_client = mocker.patch("socialapi.tasks.httpx.AsyncClient")
+
+    mocked_async_client = Mock()
+    response = Response(status_code=200, content="", request=Request("POST", "//"))
+    mocked_async_client.post = AsyncMock(return_value=response)
+    mocked_client.return_value.__aenter__.return_value = mocked_async_client
+
+    return mocked_async_client
