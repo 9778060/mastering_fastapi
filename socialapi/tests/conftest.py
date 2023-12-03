@@ -5,8 +5,9 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient, Request, Response
 from unittest.mock import AsyncMock, Mock
 
-from ..database import database, users_table
+from ..database import database, users_table, engine, metadata
 from ..main import app, prefix_users
+from .helpers import create_post
 
 @pytest.fixture
 def number_of_posts_to_test():
@@ -26,6 +27,8 @@ def client() -> Generator:
 
 @pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
+    metadata.create_all(engine)
+
     await database.connect()
     query = """ALTER SEQUENCE posts_id_seq RESTART WITH 1"""
     await database.execute(query=query)
@@ -36,7 +39,7 @@ async def db() -> AsyncGenerator:
     query = """ALTER SEQUENCE likes_id_seq RESTART WITH 1"""
     await database.execute(query=query)
     
-    yield
+    yield database
 
     await database.disconnect()
 
@@ -93,3 +96,8 @@ def mock_httpx_client(mocker):
     mocked_client.return_value.__aenter__.return_value = mocked_async_client
 
     return mocked_async_client
+
+
+@pytest.fixture
+async def created_post(async_client: AsyncClient, logged_in_token: str):
+    return [await create_post("Auto created post from pytest", async_client, logged_in_token)]

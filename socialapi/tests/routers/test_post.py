@@ -5,24 +5,9 @@ from fastapi import status
 from ... import security
 
 from ...main import prefix_posts
+from ..helpers import create_post, create_comment, like_post
 
-async def create_post(body: str, async_client: AsyncClient, logged_in_token: str, with_likes=0) -> dict:
-    response = await async_client.post(prefix_posts + "/create_post", json={"body": body}, headers={"Authorization": f"Bearer {logged_in_token}"})
-    for i in range(with_likes):
-        response_like = await async_client.post(prefix_posts + "/like", json={"post_id": response.json()["id"]}, headers={"Authorization": f"Bearer {logged_in_token}"})
-    return response.json()
 
-async def create_comment(body: str, post_id: int, async_client: AsyncClient, logged_in_token: str) -> dict:
-    response = await async_client.post(prefix_posts + "/create_comment", json={"body": body, "post_id": post_id}, headers={"Authorization": f"Bearer {logged_in_token}"})
-    return response.json()
-
-async def like_post(post_id: int, async_client: AsyncClient, logged_in_token: str) -> dict:
-    response = await async_client.post(prefix_posts + "/like", json={"post_id": post_id}, headers={"Authorization": f"Bearer {logged_in_token}"})
-    return response.json()
-
-@pytest.fixture
-async def created_post(async_client: AsyncClient, logged_in_token: str):
-    return [await create_post("Auto created post from pytest", async_client, logged_in_token)]
 
 @pytest.fixture
 async def created_post_with_like(async_client: AsyncClient, logged_in_token: str):
@@ -58,7 +43,7 @@ async def test_create_posts(async_client: AsyncClient, confirmed_user: dict, log
     print(response.json())
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert {"id": 1, "body": body, "user_id": confirmed_user["id"]}.items() <= response.json().items()
+    assert {"id": 1, "body": body, "user_id": confirmed_user["id"], "image_url": None}.items() <= response.json().items()
 
 
     response = await async_client.post(
@@ -71,7 +56,7 @@ async def test_create_posts(async_client: AsyncClient, confirmed_user: dict, log
     print(response.json())
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert {"id": 2, "body": body, "user_id": confirmed_user["id"]}.items() <= response.json().items()
+    assert {"id": 2, "body": body, "user_id": confirmed_user["id"], "image_url": None}.items() <= response.json().items()
 
 
     response = await async_client.post(
@@ -84,7 +69,7 @@ async def test_create_posts(async_client: AsyncClient, confirmed_user: dict, log
     print(response.json())
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert {"id": 3, "body": body, "user_id": confirmed_user["id"]}.items() <= response.json().items()
+    assert {"id": 3, "body": body, "user_id": confirmed_user["id"], "image_url": None}.items() <= response.json().items()
 
 
 @pytest.mark.anyio
@@ -155,6 +140,22 @@ async def test_like_post(async_client: AsyncClient, created_post: list[dict], co
 
     assert response.status_code == status.HTTP_201_CREATED
     assert {"id": 3, "post_id": created_post[0]["id"], "user_id": confirmed_user["id"]}.items() <= response.json().items()
+
+
+@pytest.mark.anyio
+async def test_create_post_with_prompt(async_client: AsyncClient, logged_in_token: str, mock_generate_cute_creature_api):
+    response = await async_client.post(
+        prefix_posts + "/create_post?prompt=A cat",
+        json={"body": "Test Post"},
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+    assert {
+        "id": 1,
+        "body": "Test Post",
+        "image_url": None,
+    }.items() <= response.json().items()
+    mock_generate_cute_creature_api.assert_called()
 
 
 @pytest.mark.anyio

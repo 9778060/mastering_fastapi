@@ -26,3 +26,10 @@ generate revision -> alembic revision --autogenerate
 upgrade -> alembic upgrade <revision | head>
 downgrade -> alembic downgrade <revision | base>
 history -> alembic history <--verbose>
+
+POSTGRESQL:
+sudo service postgresql start
+sudo service postgresql stop
+sudo service postgresql status
+sudo -u postgres psql
+hostname -I

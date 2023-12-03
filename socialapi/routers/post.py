@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, BackgroundTasks, Request
 from .. import UserPost, UserPostIn, CommentIn, Comment, UserPostWithComments, User, PostLike, PostLikeIn, UserPostWithLikes
 from ..database import post_table, comments_table, like_table, database
 from ..security import get_current_user
+from ..tasks import generate_and_add_to_post
 from typing import Annotated
 from enum import Enum
 import sys
@@ -30,7 +31,13 @@ async def find_post(post_id: int):
 
 
 @router.post("/create_post", response_model=UserPost, status_code=status.HTTP_201_CREATED)
-async def add_post(user_post: UserPostIn, current_user: Annotated[User, Depends(get_current_user)]):
+async def add_post(
+    user_post: UserPostIn,
+    current_user: Annotated[User, Depends(get_current_user)],
+    background_tasks: BackgroundTasks,
+    request: Request,
+    prompt: str = None
+):
     logger.info("Creating a post")
 
     data = {**user_post.model_dump(), "user_id": current_user.id}
@@ -39,6 +46,17 @@ async def add_post(user_post: UserPostIn, current_user: Annotated[User, Depends(
     logger.debug(query)
 
     last_record_id = await database.execute(query)
+
+    if prompt:
+        background_tasks.add_task(
+            generate_and_add_to_post,
+            current_user.email,
+            last_record_id,
+            request.url_for("get_post_with_comments", post_id=last_record_id),
+            database,
+            prompt,
+        )
+
     return {**data, "id": last_record_id}
 
 
