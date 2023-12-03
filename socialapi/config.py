@@ -30,15 +30,15 @@ class GlobalConfig(BaseConfig):
     DEEPAI_API_KEY: Optional[str] = None
 
 class DevConfig(GlobalConfig):
-    model_config = SettingsConfigDict(env_prefix="DEV_")
+    model_config = SettingsConfigDict(env_prefix="DEV_", extra="ignore")
 
 
 class ProdConfig(GlobalConfig):
-    model_config = SettingsConfigDict(env_prefix="PROD_")
+    model_config = SettingsConfigDict(env_prefix="PROD_", extra="ignore")
 
 
 class TestConfig(GlobalConfig):
-    model_config = SettingsConfigDict(env_prefix="TEST_")
+    model_config = SettingsConfigDict(env_prefix="TEST_", extra="ignore")
 
 
 @lru_cache()
